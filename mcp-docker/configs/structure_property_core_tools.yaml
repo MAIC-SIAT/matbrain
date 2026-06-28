@@ -1,0 +1,59 @@
+# Compact direct-action tool pool for Mat-T1 structure/property RL.
+#
+# This subset is intentionally small enough to avoid the 81-tool prompt bloat,
+# while keeping the action space in the original "direct backend tool call"
+# form. It is the preferred training profile for reviewer-facing Mat-T1
+# experiments on the current H800 server.
+tools:
+  - name: generate_crystal_structures_crystallm
+    server_url: http://localhost:5669/sse
+
+  - name: relax_crystal_structure_MatGL
+    server_url: http://localhost:5668/sse
+  - name: predict_formation_energy_MatGL
+    server_url: http://localhost:5668/sse
+  - name: predict_internal_energy_MatGL
+    server_url: http://localhost:5668/sse
+  - name: calculate_pes_observables_MatGL
+    server_url: http://localhost:5668/sse
+  - name: predict_multi_fidelity_band_gap_MatGL
+    server_url: http://localhost:5668/sse
+  - name: classify_metallicity_from_band_gap
+    server_url: http://localhost:5668/sse
+  - name: screen_magnetic_moments_CHGNet
+    server_url: http://localhost:5668/sse
+  - name: relax_structure_with_qet_MatGL
+    server_url: http://localhost:5668/sse
+  - name: calculate_qet_pes_observables_MatGL
+    server_url: http://localhost:5668/sse
+  - name: compare_qet_and_tensornet_pes_MatGL
+    server_url: http://localhost:5668/sse
+  - name: predict_elastic_properties_MatGL
+    server_url: http://localhost:5668/sse
+
+  - name: analyze_cif_structure_pymatgen
+    server_url: http://localhost:5672/pymatgen/sse
+  - name: standardize_structure_pymatgen
+    server_url: http://localhost:5672/pymatgen/sse
+  - name: check_chemical_formula_valence_pymatgen
+    server_url: http://localhost:5672/pymatgen/sse
+  - name: check_structure_atomic_geometry_pymatgen
+    server_url: http://localhost:5672/pymatgen/sse
+  - name: extract_symmetry_and_wyckoff_pymatgen
+    server_url: http://localhost:5672/pymatgen/sse
+  - name: compare_structures_pymatgen
+    server_url: http://localhost:5672/pymatgen/sse
+  - name: score_generated_cif_against_target_pymatgen
+    server_url: http://localhost:5672/pymatgen/sse
+  - name: apply_vegards_law_refinement_pymatgen
+    server_url: http://localhost:5672/pymatgen/sse
+  - name: enumerate_fractional_occupancy_structure_pymatgen
+    server_url: http://localhost:5672/pymatgen/sse
+
+  - name: analyze_phase_stability_mp
+    server_url: http://localhost:5682/sse
+
+  - name: validate_formula_verifier
+    server_url: http://localhost:5676/sse
+  - name: validate_structure_verifier
+    server_url: http://localhost:5676/sse

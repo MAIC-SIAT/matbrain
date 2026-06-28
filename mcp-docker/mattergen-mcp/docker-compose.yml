@@ -1,0 +1,136 @@
+services:
+  mattergen-mcp:
+    build:
+      context: ../mcp-sse-router
+      dockerfile: Dockerfile
+    image: mcp-sse-router
+    container_name: mattergen-mcp
+    depends_on:
+    - mattergen-mcp-backend-1
+    ports:
+    - ${HOST_PORT}:${SERVER_PORT}
+    environment:
+    - SERVER_HOST=${SERVER_HOST}
+    - SERVER_PORT=${SERVER_PORT}
+    - LOG_LEVEL=${LOG_LEVEL}
+    - SERVICE_NAME=mattergen-mcp
+    - BACKEND_URLS=http://mattergen-mcp-backend-1:${SERVER_PORT},http://mattergen-mcp-backend-2:${SERVER_PORT}
+    - BACKEND_HEALTH_PATH=/health
+    - BACKEND_SSE_PATH=/sse
+    - BACKEND_MESSAGE_PATH=/messages/
+    - PUBLIC_SSE_PATH=/sse
+    - PUBLIC_MESSAGE_PATH=/messages/
+    - PUBLIC_HEALTH_PATH=/health
+    restart: unless-stopped
+    healthcheck:
+      test: &id001
+      - CMD
+      - python
+      - -c
+      - import os, urllib.request; urllib.request.urlopen('http://localhost:' + os.environ.get('SERVER_PORT',
+        '5670') + '/health')
+      interval: 300s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+  mattergen-mcp-backend-1:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: mattergen-mcp:latest
+    deploy:
+      resources:
+        reservations:
+          devices:
+          - driver: nvidia
+            count: all
+            capabilities:
+            - gpu
+    environment:
+    - SERVER_HOST=${SERVER_HOST}
+    - SERVER_PORT=${SERVER_PORT}
+    - TOOL_CALL_TIMEOUT=${TOOL_CALL_TIMEOUT}
+    - LOG_LEVEL=${LOG_LEVEL}
+    - MATTERGEN_ROOT=${MATTERGEN_ROOT}
+    - MATTERGENMODEL_ROOT=${MATTERGENMODEL_ROOT}
+    - MATTERGEN_TEMP_DIR=${MATTERGEN_TEMP_DIR}
+    - MATTERGEN_BATCH_SIZE=${MATTERGEN_BATCH_SIZE}
+    - MATTERGEN_NUM_BATCHES=${MATTERGEN_NUM_BATCHES}
+    - MATTERGEN_GUIDANCE_FACTOR=${MATTERGEN_GUIDANCE_FACTOR}
+    - MATTERGEN_DEVICE=${MATTERGEN_DEVICE}
+    - PYTHONUNBUFFERED=${PYTHONUNBUFFERED}
+    - NVIDIA_VISIBLE_DEVICES=all
+    - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+    volumes:
+    - ${HOST_MODEL_DIR}:${MATTERGENMODEL_ROOT}:ro
+    - ./logs:/app/logs
+    - ./data:/app/data
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: '3'
+    healthcheck:
+      test: *id001
+      interval: 300s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    security_opt:
+    - no-new-privileges:true
+    tmpfs:
+    - /tmp:noexec,nosuid,size=2g
+    - /var/tmp:noexec,nosuid,size=100m
+  mattergen-mcp-backend-2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    deploy:
+      resources:
+        reservations:
+          devices:
+          - capabilities:
+            - gpu
+            count: all
+            driver: nvidia
+    environment:
+    - SERVER_HOST=${SERVER_HOST}
+    - SERVER_PORT=${SERVER_PORT}
+    - TOOL_CALL_TIMEOUT=${TOOL_CALL_TIMEOUT}
+    - LOG_LEVEL=${LOG_LEVEL}
+    - MATTERGEN_ROOT=${MATTERGEN_ROOT}
+    - MATTERGENMODEL_ROOT=${MATTERGENMODEL_ROOT}
+    - MATTERGEN_TEMP_DIR=${MATTERGEN_TEMP_DIR}
+    - MATTERGEN_BATCH_SIZE=${MATTERGEN_BATCH_SIZE}
+    - MATTERGEN_NUM_BATCHES=${MATTERGEN_NUM_BATCHES}
+    - MATTERGEN_GUIDANCE_FACTOR=${MATTERGEN_GUIDANCE_FACTOR}
+    - MATTERGEN_DEVICE=${MATTERGEN_DEVICE}
+    - PYTHONUNBUFFERED=${PYTHONUNBUFFERED}
+    - NVIDIA_VISIBLE_DEVICES=all
+    - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+    healthcheck:
+      interval: 300s
+      retries: 3
+      start_period: 60s
+      test: *id001
+      timeout: 10s
+    image: mattergen-mcp:latest
+    logging:
+      driver: json-file
+      options:
+        max-file: '3'
+        max-size: 10m
+    restart: unless-stopped
+    security_opt:
+    - no-new-privileges:true
+    tmpfs:
+    - /tmp:noexec,nosuid,size=2g
+    - /var/tmp:noexec,nosuid,size=100m
+    volumes:
+    - ${HOST_MODEL_DIR}:${MATTERGENMODEL_ROOT}:ro
+    - ./logs:/app/logs
+    - ./data:/app/data
+networks:
+  default:
+    name: mattergen-mcp-network

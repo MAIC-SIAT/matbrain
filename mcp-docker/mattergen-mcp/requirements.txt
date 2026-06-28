@@ -1,0 +1,9 @@
+# MCP 服务器核心依赖
+mcp>=1.6.0
+anyio>=4.0.0
+click>=8.0.0
+starlette>=0.27.0
+uvicorn>=0.23.0
+
+# emmet-core 的隐式依赖（mattergen 通过 emmet 引入）
+orjson

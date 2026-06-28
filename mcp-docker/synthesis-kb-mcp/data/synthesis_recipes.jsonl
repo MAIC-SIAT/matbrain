@@ -1,0 +1,4 @@
+{"target_formula":"LiFePO4","precursors":["Li2CO3","FeC2O4","NH4H2PO4"],"temperature_c":700,"atmosphere":"Ar","method":"solid-state","source":"seed_example"}
+{"target_formula":"BaTiO3","precursors":["BaCO3","TiO2"],"temperature_c":1100,"atmosphere":"air","method":"solid-state","source":"seed_example"}
+{"target_formula":"LaMnO3","precursors":["La2O3","MnO2"],"temperature_c":1200,"atmosphere":"air","method":"solid-state","source":"seed_example"}
+{"target_formula":"SrTiO3","precursors":["SrCO3","TiO2"],"temperature_c":1150,"atmosphere":"air","method":"solid-state","source":"seed_example"}

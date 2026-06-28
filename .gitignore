@@ -1,0 +1,40 @@
+# Runtime configuration
+.env
+*.env
+!.env.example
+
+# Python caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# Logs and run artifacts
+logs/
+*.log
+run_*.jsonl
+outputs/
+artifacts/
+checkpoints/
+checkpoint/
+wandb/
+mlruns/
+
+# Model weights and large training artifacts
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.bin
+*.parquet
+
+# Local OS/editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Nested repository metadata or archived git histories
+.git_disabled/

@@ -1,0 +1,115 @@
+services:
+  crystallm-mcp:
+    container_name: crystallm-mcp
+    build:
+      context: ../mcp-sse-router
+      dockerfile: Dockerfile
+    image: mcp-sse-router
+    depends_on:
+    - crystallm-mcp-backend-1
+    ports:
+    - ${HOST_PORT}:${SERVER_PORT}
+    environment:
+    - SERVER_HOST=${SERVER_HOST}
+    - SERVER_PORT=${SERVER_PORT}
+    - LOG_LEVEL=${LOG_LEVEL}
+    - SERVICE_NAME=crystallm-mcp
+    - BACKEND_URLS=http://crystallm-mcp-backend-1:${SERVER_PORT},http://crystallm-mcp-backend-2:${SERVER_PORT}
+    - BACKEND_SSE_PATH=/sse
+    - BACKEND_MESSAGE_PATH=/messages/
+    - PUBLIC_MESSAGE_PATH=/messages/
+    restart: unless-stopped
+    healthcheck:
+      test: &id001
+      - CMD
+      - python
+      - -c
+      - import os, urllib.request; urllib.request.urlopen('http://localhost:' + os.environ.get('SERVER_PORT',
+        '5669') + '/health')
+      interval: 300s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+  crystallm-mcp-backend-1:
+    build: &id002
+      context: .
+      dockerfile: Dockerfile
+      args:
+        http_proxy: ${http_proxy}
+        https_proxy: ${https_proxy}
+        no_proxy: ${no_proxy}
+        HTTP_PROXY: ${http_proxy}
+        HTTPS_PROXY: ${https_proxy}
+        NO_PROXY: ${no_proxy}
+        UBUNTU_MIRROR: ${UBUNTU_MIRROR:-}
+    image: crystallm-mcp:latest
+    runtime: nvidia
+    deploy: &id003
+      resources:
+        reservations:
+          devices:
+          - driver: nvidia
+            device_ids:
+            - ${NVIDIA_VISIBLE_DEVICES}
+            capabilities:
+            - gpu
+    environment: &id004
+    - SERVER_HOST=${SERVER_HOST}
+    - SERVER_PORT=${SERVER_PORT}
+    - CRYSTALLM_MODEL_DIR=${CRYSTALLM_MODEL_DIR}
+    - CRYSTALLM_DEVICE=${CRYSTALLM_DEVICE}
+    - TOOL_CALL_TIMEOUT=${TOOL_CALL_TIMEOUT}
+    - LOG_LEVEL=${LOG_LEVEL}
+    - PYTHONUNBUFFERED=${PYTHONUNBUFFERED}
+    - http_proxy=${http_proxy}
+    - https_proxy=${https_proxy}
+    - no_proxy=${no_proxy}
+    - HTTP_PROXY=${http_proxy}
+    - HTTPS_PROXY=${https_proxy}
+    - NO_PROXY=${no_proxy}
+    - MODEL_AUTO_DOWNLOAD=${MODEL_AUTO_DOWNLOAD}
+    - MODEL_FORCE_REDOWNLOAD=${MODEL_FORCE_REDOWNLOAD}
+    - MODEL_SKIP_MD5_CHECK=${MODEL_SKIP_MD5_CHECK}
+    - NVIDIA_VISIBLE_DEVICES=${NVIDIA_VISIBLE_DEVICES}
+    - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+    - CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES}
+    - CUDA_DEVICE_ORDER=PCI_BUS_ID
+    - TORCH_CUDA_ARCH_LIST=8.0
+    - CUDA_LAUNCH_BLOCKING=0
+    user: ${RUN_UID:-1000}:${RUN_GID:-1000}
+    volumes: &id005
+    - ${HOST_MODEL_DIR}:${CRYSTALLM_MODEL_DIR}
+    - ./logs:/app/logs
+    restart: unless-stopped
+    logging: &id006
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: '3'
+    healthcheck: &id007
+      test: *id001
+      interval: 300s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    security_opt: &id008
+    - no-new-privileges:true
+    tmpfs: &id009
+    - /tmp:noexec,nosuid,size=500m
+    - /var/tmp:noexec,nosuid,size=200m
+  crystallm-mcp-backend-2:
+    build: *id002
+    image: crystallm-mcp:latest
+    runtime: nvidia
+    deploy: *id003
+    environment: *id004
+    user: ${RUN_UID:-1000}:${RUN_GID:-1000}
+    volumes: *id005
+    restart: unless-stopped
+    logging: *id006
+    healthcheck: *id007
+    security_opt: *id008
+    tmpfs: *id009
+networks:
+  default:
+    name: crystallm-mcp-network

@@ -1,0 +1,51 @@
+# 核心材料计算库
+matgl==4.0.1
+pymatgen>=2026.4.16
+ase==3.26.0
+torchdata==0.8.0
+# 官方 CHGNet（固定在 0.3.x，与 torch 2.4.0 + cu124 / 现有 PyG 组合兼容）—— predict_internal_energy_MatGL 用这个；
+# 它给出的 e_per_atom 直接和 MP 的 PBE DFT 总能可比（误差 ~30 meV/atom），
+# 比 matgl 包装层走 Potential.PESCalculator 路径（系统性偏 280-900 meV/atom）准。
+# 详见 tools/matgl_tools.py 中 predict_internal_energy_MatGL 的 docstring 与对照 probe。
+chgnet==0.3.0
+matcalc==0.5.1
+maml>=2025.4.3
+
+# MCP 服务器核心依赖
+mcp>=1.6.0
+anyio>=4.9.0
+click>=8.1.8
+starlette>=0.46.2
+uvicorn>=0.34.1
+
+# 科学计算和机器学习
+numpy==1.26.4
+scipy==1.15.2
+scikit-learn>=1.6.1
+pandas==2.2.3
+
+# PyTorch 生态系统（GPU 支持）
+# torch 与 PyG 相关包在 Dockerfile 中单独安装，避免 PyPI 解析反复回退。
+
+# Materials Project API
+mp-api>=0.45.3
+
+# HTTP 和网络通信
+requests>=2.32.3
+aiohttp>=3.11.16
+httpx>=0.28.1
+beautifulsoup4>=4.9.0
+
+# 数据处理和验证
+pydantic>=2.11.3
+typing-extensions>=4.13.2
+lxml>=5.3.2
+
+# 日志记录
+loguru>=0.7.3
+
+# 其他必要依赖
+joblib>=1.4.2
+tqdm>=4.67.1
+matplotlib>=3.8.4
+plotly>=6.0.1

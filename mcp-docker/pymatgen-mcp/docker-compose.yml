@@ -1,0 +1,89 @@
+services:
+  pymatgen-mcp:
+    container_name: pymatgen-mcp
+    build:
+      context: ../mcp-sse-router
+      dockerfile: Dockerfile
+    image: mcp-sse-router
+    depends_on:
+    - pymatgen-mcp-backend-1
+    ports:
+    - ${HOST_PORT}:${SERVER_PORT}
+    environment:
+    - SERVER_HOST=${SERVER_HOST}
+    - SERVER_PORT=${SERVER_PORT}
+    - LOG_LEVEL=${LOG_LEVEL}
+    - SERVICE_NAME=pymatgen-mcp
+    - BACKEND_URLS=http://pymatgen-mcp-backend-1:${SERVER_PORT},http://pymatgen-mcp-backend-2:${SERVER_PORT}
+    - BACKEND_HEALTH_PATH=${MCP_PATH_PREFIX}/health
+    - BACKEND_SSE_PATH=${MCP_PATH_PREFIX}/sse
+    - BACKEND_MESSAGE_PATH=${MCP_PATH_PREFIX}/messages/
+    - PUBLIC_SSE_PATH=${MCP_PATH_PREFIX}/sse
+    - PUBLIC_MESSAGE_PATH=${MCP_PATH_PREFIX}/messages/
+    - PUBLIC_HEALTH_PATH=${MCP_PATH_PREFIX}/health
+    restart: unless-stopped
+    healthcheck:
+      test: &id001
+      - CMD
+      - python
+      - -c
+      - import os, urllib.request; urllib.request.urlopen('http://localhost:' + os.environ.get('SERVER_PORT',
+        '5672') + '/pymatgen/health')
+      interval: 300s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+  pymatgen-mcp-backend-1:
+    build: &id002
+      context: .
+      dockerfile: Dockerfile
+      args:
+        http_proxy: ${http_proxy}
+        https_proxy: ${https_proxy}
+        no_proxy: ${no_proxy}
+        HTTP_PROXY: ${http_proxy}
+        HTTPS_PROXY: ${https_proxy}
+        NO_PROXY: ${no_proxy}
+    image: pymatgen-mcp
+    environment: &id003
+    - MP_API_KEY=${MP_API_KEY}
+    - ENERGY_THRESHOLD=${ENERGY_THRESHOLD}
+    - MATGL_MCP_SSE_URL=${MATGL_MCP_SSE_URL}
+    - SERVER_HOST=${SERVER_HOST}
+    - SERVER_PORT=${SERVER_PORT}
+    - TOOL_CALL_TIMEOUT=${TOOL_CALL_TIMEOUT}
+    - LOG_LEVEL=${LOG_LEVEL}
+    - PYTHONUNBUFFERED=${PYTHONUNBUFFERED}
+    - MCP_PATH_PREFIX=${MCP_PATH_PREFIX}
+    - http_proxy=${http_proxy}
+    - https_proxy=${https_proxy}
+    - no_proxy=${no_proxy}
+    - HTTP_PROXY=${http_proxy}
+    - HTTPS_PROXY=${https_proxy}
+    - NO_PROXY=${no_proxy}
+    volumes: &id004
+    - ./logs:/app/logs
+    restart: unless-stopped
+    logging: &id005
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: '3'
+    healthcheck: &id006
+      test: *id001
+      interval: 300s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+  pymatgen-mcp-backend-2:
+    build: *id002
+    image: pymatgen-mcp
+    environment: *id003
+    volumes: *id004
+    restart: unless-stopped
+    logging: *id005
+    healthcheck: *id006
+networks:
+  default:
+    name: matgl-mcp-network
+    external: true

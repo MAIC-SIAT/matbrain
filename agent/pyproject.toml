@@ -1,0 +1,30 @@
+[project]
+name = "matbrain-agent"
+version = "0.1.0"
+description = "LangGraph-based dual-model collaborative agent (Mat-T1 executor + Mat-R1 reasoner) over Mat-MCP services."
+requires-python = ">=3.10"
+dependencies = [
+    "langgraph>=1.2",
+    "openai>=1.0",
+    "mcp>=1.20",
+    "pydantic>=2.10",
+    "pydantic-settings>=2.10",
+    "gradio>=5.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8",
+    "pytest-asyncio>=0.24",
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["matbrain*"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"

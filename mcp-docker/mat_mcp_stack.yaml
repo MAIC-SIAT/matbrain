@@ -1,0 +1,245 @@
+# Machine-readable Mat-MCP stack inventory.
+#
+# enabled=true means the service is part of the current Mat-T1/Mat-R1 tool
+# configs under train/rl/tool_configs. Extra services are kept here so Docker
+# orchestration can include them explicitly when needed.
+services:
+  - name: matgl-mcp
+    directory: matgl-mcp
+    port: 5668
+    sse_path: /sse
+    health_path: /health
+    enabled: true
+    gpu: true
+    replicas_smoke: 4
+    replicas_production32: 8
+    replicas_production128: 32
+    concurrency_cap_smoke: 4
+    concurrency_cap_production32: 8
+    concurrency_cap_production128: 32
+    gpu_devices: ["0", "1", "2", "3"]
+
+  - name: crystallm-mcp
+    directory: crystallm-mcp
+    port: 5669
+    sse_path: /sse
+    health_path: /health
+    enabled: true
+    gpu: true
+    replicas_smoke: 4
+    replicas_production32: 8
+    replicas_production128: 12
+    concurrency_cap_smoke: 4
+    concurrency_cap_production32: 8
+    concurrency_cap_production128: 12
+    gpu_devices: ["1"]
+
+  - name: pymatgen-mcp
+    directory: pymatgen-mcp
+    port: 5672
+    sse_path: /pymatgen/sse
+    health_path: /pymatgen/health
+    enabled: true
+    replicas_smoke: 4
+    replicas_production32: 8
+    replicas_production128: 64
+    concurrency_cap_smoke: 6
+    concurrency_cap_production32: 12
+    concurrency_cap_production128: 64
+    depends_on:
+      - matgl-mcp
+
+  - name: smact-mcp
+    directory: smact-mcp
+    port: 5673
+    sse_path: /sse
+    health_path: /health
+    enabled: true
+    replicas_smoke: 4
+    replicas_production32: 8
+    replicas_production128: 64
+    concurrency_cap_smoke: 6
+    concurrency_cap_production32: 12
+    concurrency_cap_production128: 64
+
+  - name: matminer-mcp
+    directory: matminer-mcp
+    port: 5674
+    sse_path: /sse
+    health_path: /health
+    enabled: true
+    replicas_smoke: 4
+    replicas_production32: 8
+    replicas_production128: 64
+    concurrency_cap_smoke: 6
+    concurrency_cap_production32: 12
+    concurrency_cap_production128: 64
+
+  - name: pyxtal-mcp
+    directory: pyxtal-mcp
+    port: 5675
+    sse_path: /sse
+    health_path: /health
+    enabled: true
+    replicas_smoke: 4
+    replicas_production32: 8
+    replicas_production128: 48
+    concurrency_cap_smoke: 4
+    concurrency_cap_production32: 8
+    concurrency_cap_production128: 48
+
+  - name: structure-verifier-mcp
+    directory: structure-verifier-mcp
+    port: 5676
+    sse_path: /sse
+    health_path: /health
+    enabled: true
+    replicas_smoke: 4
+    replicas_production32: 8
+    replicas_production128: 64
+    concurrency_cap_smoke: 6
+    concurrency_cap_production32: 12
+    concurrency_cap_production128: 64
+
+  - name: materials-db-router-mcp
+    directory: materials-db-router-mcp
+    port: 5677
+    sse_path: /sse
+    health_path: /health
+    enabled: true
+    replicas_smoke: 2
+    replicas_production32: 4
+    replicas_production128: 32
+    concurrency_cap_smoke: 4
+    concurrency_cap_production32: 8
+    concurrency_cap_production128: 32
+
+  - name: synthesis-kb-mcp
+    directory: synthesis-kb-mcp
+    port: 5678
+    sse_path: /sse
+    health_path: /health
+    enabled: true
+    replicas_smoke: 2
+    replicas_production32: 4
+    replicas_production128: 32
+    concurrency_cap_smoke: 4
+    concurrency_cap_production32: 8
+    concurrency_cap_production128: 32
+
+  - name: uip-relax-mcp
+    directory: uip-relax-mcp
+    port: 5679
+    sse_path: /sse
+    health_path: /health
+    enabled: true
+    gpu: true
+    replicas_smoke: 2
+    replicas_production32: 4
+    replicas_production128: 8
+    concurrency_cap_smoke: 2
+    concurrency_cap_production32: 4
+    concurrency_cap_production128: 8
+    gpu_devices: ["2"]
+
+  - name: literature-evidence-mcp
+    directory: literature-evidence-mcp
+    port: 5680
+    sse_path: /sse
+    health_path: /health
+    enabled: true
+    replicas_smoke: 2
+    replicas_production32: 4
+    replicas_production128: 32
+    concurrency_cap_smoke: 4
+    concurrency_cap_production32: 8
+    concurrency_cap_production128: 32
+
+  - name: reaction-thermo-mcp
+    directory: reaction-thermo-mcp
+    port: 5682
+    sse_path: /sse
+    health_path: /health
+    enabled: true
+    replicas_smoke: 2
+    replicas_production32: 4
+    replicas_production128: 32
+    concurrency_cap_smoke: 4
+    concurrency_cap_production32: 8
+    concurrency_cap_production128: 32
+
+  - name: characterization-mcp
+    directory: characterization-mcp
+    port: 5683
+    sse_path: /sse
+    health_path: /health
+    enabled: true
+    replicas_smoke: 2
+    replicas_production32: 4
+    replicas_production128: 32
+    concurrency_cap_smoke: 4
+    concurrency_cap_production32: 8
+    concurrency_cap_production128: 32
+
+  - name: precursor-chemistry-mcp
+    directory: precursor-chemistry-mcp
+    port: 5684
+    sse_path: /sse
+    health_path: /health
+    enabled: true
+    replicas_smoke: 2
+    replicas_production32: 4
+    replicas_production128: 32
+    concurrency_cap_smoke: 4
+    concurrency_cap_production32: 8
+    concurrency_cap_production128: 32
+
+  - name: tool-registry-mcp
+    directory: tool-registry-mcp
+    port: 5685
+    sse_path: /sse
+    health_path: /health
+    enabled: true
+    replicas_smoke: 2
+    replicas_production32: 4
+    replicas_production128: 64
+    concurrency_cap_smoke: 6
+    concurrency_cap_production32: 12
+    concurrency_cap_production128: 64
+
+  - name: defect-interface-mcp
+    directory: defect-interface-mcp
+    port: 5686
+    sse_path: /sse
+    health_path: /health
+    enabled: true
+    replicas_smoke: 2
+    replicas_production32: 4
+    replicas_production128: 32
+    concurrency_cap_smoke: 4
+    concurrency_cap_production32: 8
+    concurrency_cap_production128: 32
+
+  - name: mat-query-mcp
+    directory: mat-query-mcp
+    port: 5667
+    sse_path: /sse
+    health_path: /health
+    enabled: false
+    note: Direct database lookup service, intentionally excluded from current RL tool configs.
+
+  - name: mattergen-mcp
+    directory: mattergen-mcp
+    port: 5670
+    sse_path: /sse
+    health_path: /health
+    enabled: false
+    gpu: true
+    note: Generative baseline service, intentionally excluded from current RL tool configs.
+    replicas_smoke: 2
+    replicas_production32: 4
+    replicas_production128: 16
+    concurrency_cap_smoke: 2
+    concurrency_cap_production32: 4
+    concurrency_cap_production128: 16
+    gpu_devices: ["2", "3"]

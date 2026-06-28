@@ -1,0 +1,99 @@
+services:
+  matgl-mcp:
+    build:
+      context: ../mcp-sse-router
+      dockerfile: Dockerfile
+    image: mcp-sse-router
+    container_name: matgl-mcp
+    depends_on:
+    - matgl-mcp-backend-1
+    ports:
+    - ${HOST_PORT}:${SERVER_PORT}
+    environment:
+    - SERVICE_NAME=matgl-mcp
+    - SERVER_HOST=${SERVER_HOST}
+    - SERVER_PORT=${SERVER_PORT}
+    - LOG_LEVEL=${LOG_LEVEL}
+    - BACKEND_URLS=http://matgl-mcp-backend-1:${SERVER_PORT},http://matgl-mcp-backend-2:${SERVER_PORT}
+    - BACKEND_SSE_PATH=/sse
+    - BACKEND_MESSAGE_PATH=/messages/
+    - PUBLIC_MESSAGE_PATH=/messages/
+    restart: unless-stopped
+    healthcheck:
+      test: &id001
+      - CMD
+      - python
+      - -c
+      - import os, urllib.request; urllib.request.urlopen('http://localhost:' + os.environ.get('SERVER_PORT',
+        '5668') + '/health')
+      interval: 300s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+  matgl-mcp-backend-1:
+    build: &id002
+      context: .
+      dockerfile: Dockerfile
+      args:
+        http_proxy: ${http_proxy}
+        https_proxy: ${https_proxy}
+        no_proxy: ${no_proxy}
+        HTTP_PROXY: ${http_proxy}
+        HTTPS_PROXY: ${https_proxy}
+        NO_PROXY: ${no_proxy}
+    image: matgl-mcp
+    environment: &id003
+    - SERVER_HOST=${SERVER_HOST}
+    - SERVER_PORT=${SERVER_PORT}
+    - TOOL_CALL_TIMEOUT=${TOOL_CALL_TIMEOUT}
+    - LOG_LEVEL=${LOG_LEVEL}
+    - http_proxy=${http_proxy}
+    - https_proxy=${https_proxy}
+    - no_proxy=${no_proxy}
+    - HTTP_PROXY=${http_proxy}
+    - HTTPS_PROXY=${https_proxy}
+    - NO_PROXY=${no_proxy}
+    - NVIDIA_VISIBLE_DEVICES=${NVIDIA_VISIBLE_DEVICES}
+    - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+    - MATGL_DEVICE=${MATGL_DEVICE}
+    - CHGNET_DEVICE=${CHGNET_DEVICE}
+    - MATGL_PES_MODEL_REF=${MATGL_PES_MODEL_REF}
+    - MATGL_QET_PES_MODEL_REF=${MATGL_QET_PES_MODEL_REF}
+    - MATGL_QET_PES_R2SCAN_MODEL_REF=${MATGL_QET_PES_R2SCAN_MODEL_REF}
+    - MATGL_EFORM_MODEL_REF=${MATGL_EFORM_MODEL_REF}
+    - MATGL_BAND_GAP_MODEL_REF=${MATGL_BAND_GAP_MODEL_REF}
+    - HF_HOME=${HF_HOME}
+    - HF_HUB_CACHE=${HF_HUB_CACHE}
+    - MATGL_HF_CACHE=${MATGL_HF_CACHE}
+    - HF_HUB_OFFLINE=${HF_HUB_OFFLINE}
+    deploy: &id004
+      resources:
+        reservations:
+          devices:
+          - driver: nvidia
+            device_ids:
+            - ${NVIDIA_VISIBLE_DEVICES}
+            capabilities:
+            - gpu
+    volumes: &id005
+    - ./logs:/app/logs
+    - ./hf-cache:/root/.cache/huggingface
+    restart: unless-stopped
+    healthcheck: &id006
+      test: *id001
+      interval: 300s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+  matgl-mcp-backend-2:
+    build: *id002
+    image: matgl-mcp
+    environment: *id003
+    deploy: *id004
+    volumes: *id005
+    restart: unless-stopped
+    healthcheck: *id006
+networks:
+  default:
+    name: matgl-mcp-network
+    external: true

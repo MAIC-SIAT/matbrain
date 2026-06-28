@@ -1,0 +1,114 @@
+# Python缓存文件
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# 虚拟环境
+venv/
+env/
+ENV/
+.venv/
+
+# IDE文件
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Git文件
+.git/
+.gitignore
+.gitattributes
+
+# 日志文件
+*.log
+logs/
+
+# 测试文件
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+test_*.py
+*_test.py
+tests/
+
+# 文档
+README.md
+*.md
+docs/
+CHANGELOG*
+LICENSE*
+
+# 临时文件
+.tmp/
+temp/
+*.tmp
+*.bak
+*.orig
+
+# Docker相关
+Dockerfile.optimized
+docker-compose.override.yml
+docker-compose.optimized.yml
+build-optimized.sh
+.dockerignore
+
+# 环境变量文件（保留.env因为可能需要）
+# .env
+
+# 数据文件（如果不需要打包到镜像中）
+data/
+*.csv
+*.json
+*.pkl
+*.h5
+*.hdf5
+*.npz
+
+# 开发工具配置
+.pre-commit-config.yaml
+.flake8
+.pylintrc
+pyproject.toml
+setup.cfg
+tox.ini
+Makefile
+
+# CI/CD文件
+.github/
+.gitlab-ci.yml
+.travis.yml
+.circleci/
+
+# 缓存目录
+.cache/
+.mypy_cache/
+.pytest_cache/
+node_modules/
+
+# 系统文件
+Thumbs.db
+.DS_Store
+*.swp
+*.swo
+*~

@@ -1,0 +1,189 @@
+services:
+  uip-relax-mcp:
+    build:
+      context: ../mcp-sse-router
+      dockerfile: Dockerfile
+    image: mcp-sse-router
+    container_name: uip-relax-mcp
+    depends_on:
+    - uip-relax-mcp-backend-1
+    ports:
+    - ${HOST_PORT}:${SERVER_PORT}
+    environment:
+    - SERVER_HOST=${SERVER_HOST}
+    - SERVER_PORT=${SERVER_PORT}
+    - LOG_LEVEL=${LOG_LEVEL}
+    - SERVICE_NAME=uip-relax-mcp
+    - BACKEND_URLS=http://uip-relax-mcp-backend-1:${SERVER_PORT},http://uip-relax-mcp-backend-2:${SERVER_PORT}
+    - BACKEND_HEALTH_PATH=/health
+    - BACKEND_SSE_PATH=/sse
+    - BACKEND_MESSAGE_PATH=/messages/
+    - PUBLIC_SSE_PATH=/sse
+    - PUBLIC_MESSAGE_PATH=/messages/
+    - PUBLIC_HEALTH_PATH=/health
+    restart: unless-stopped
+    healthcheck:
+      test: &id001
+      - CMD
+      - python
+      - -c
+      - import os, urllib.request; urllib.request.urlopen('http://localhost:' + os.environ.get('SERVER_PORT',
+        '5679') + '/health')
+      interval: 300s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+  uip-relax-mcp-backend-1:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        http_proxy: ${http_proxy}
+        https_proxy: ${https_proxy}
+        no_proxy: ${no_proxy}
+        HTTP_PROXY: ${http_proxy}
+        HTTPS_PROXY: ${https_proxy}
+        NO_PROXY: ${no_proxy}
+    image: uip-relax-mcp
+    user: ${RUN_UID:-1000}:${RUN_GID:-1000}
+    environment:
+    - SERVER_HOST=${SERVER_HOST}
+    - SERVER_PORT=${SERVER_PORT}
+    - TOOL_CALL_TIMEOUT=${TOOL_CALL_TIMEOUT}
+    - LOG_LEVEL=${LOG_LEVEL}
+    - UIP_DEVICE=${UIP_DEVICE}
+    - UIP_DTYPE=${UIP_DTYPE}
+    - MACE_MP_MODEL=${MACE_MP_MODEL}
+    - UIP_MAX_RELAX_STEPS=${UIP_MAX_RELAX_STEPS}
+    - UIP_FMAX=${UIP_FMAX}
+    - MACE_CACHE_DIR=/app/model-cache
+    - XDG_CACHE_HOME=/app/model-cache
+    - http_proxy=${http_proxy}
+    - https_proxy=${https_proxy}
+    - no_proxy=${no_proxy}
+    - HTTP_PROXY=${http_proxy}
+    - HTTPS_PROXY=${https_proxy}
+    - NO_PROXY=${no_proxy}
+    - NVIDIA_VISIBLE_DEVICES=${NVIDIA_VISIBLE_DEVICES}
+    - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+    deploy:
+      resources:
+        reservations:
+          devices:
+          - driver: nvidia
+            device_ids:
+            - ${NVIDIA_VISIBLE_DEVICES}
+            capabilities:
+            - gpu
+    volumes:
+    - ${HOST_MACE_CACHE_DIR}:/app/model-cache
+    - ${HOST_UIP_LOG_DIR}:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test: *id001
+      interval: 300s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+  uip-relax-mcp-backend-2:
+    build:
+      args:
+        HTTPS_PROXY: ${https_proxy}
+        HTTP_PROXY: ${http_proxy}
+        NO_PROXY: ${no_proxy}
+        http_proxy: ${http_proxy}
+        https_proxy: ${https_proxy}
+        no_proxy: ${no_proxy}
+      context: .
+      dockerfile: Dockerfile
+    deploy:
+      resources:
+        reservations:
+          devices:
+          - capabilities:
+            - gpu
+            device_ids:
+            - ${NVIDIA_VISIBLE_DEVICES}
+            driver: nvidia
+    environment:
+    - SERVER_HOST=${SERVER_HOST}
+    - SERVER_PORT=${SERVER_PORT}
+    - TOOL_CALL_TIMEOUT=${TOOL_CALL_TIMEOUT}
+    - LOG_LEVEL=${LOG_LEVEL}
+    - UIP_DEVICE=${UIP_DEVICE}
+    - UIP_DTYPE=${UIP_DTYPE}
+    - MACE_MP_MODEL=${MACE_MP_MODEL}
+    - UIP_MAX_RELAX_STEPS=${UIP_MAX_RELAX_STEPS}
+    - UIP_FMAX=${UIP_FMAX}
+    - MACE_CACHE_DIR=/app/model-cache
+    - XDG_CACHE_HOME=/app/model-cache
+    - http_proxy=${http_proxy}
+    - https_proxy=${https_proxy}
+    - no_proxy=${no_proxy}
+    - HTTP_PROXY=${http_proxy}
+    - HTTPS_PROXY=${https_proxy}
+    - NO_PROXY=${no_proxy}
+    - NVIDIA_VISIBLE_DEVICES=${NVIDIA_VISIBLE_DEVICES}
+    - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+    healthcheck:
+      interval: 300s
+      retries: 3
+      start_period: 40s
+      test: *id001
+      timeout: 10s
+    image: uip-relax-mcp
+    restart: unless-stopped
+    user: ${RUN_UID:-1000}:${RUN_GID:-1000}
+    volumes:
+    - ${HOST_MACE_CACHE_DIR}:/app/model-cache
+    - ${HOST_UIP_LOG_DIR}:/app/logs
+  mace-model-warmup:
+    profiles:
+    - warmup
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        http_proxy: ${http_proxy}
+        https_proxy: ${https_proxy}
+        no_proxy: ${no_proxy}
+        HTTP_PROXY: ${http_proxy}
+        HTTPS_PROXY: ${https_proxy}
+        NO_PROXY: ${no_proxy}
+    image: uip-relax-mcp
+    container_name: mace-model-warmup
+    user: ${RUN_UID:-1000}:${RUN_GID:-1000}
+    command:
+    - python
+    - download_mace_models.py
+    environment:
+    - UIP_DEVICE=${UIP_DEVICE}
+    - UIP_WARMUP_DEVICE=${UIP_WARMUP_DEVICE:-cpu}
+    - UIP_DTYPE=${UIP_DTYPE}
+    - MACE_MODELS_TO_DOWNLOAD=${MACE_MODELS_TO_DOWNLOAD}
+    - MACE_CACHE_DIR=/app/model-cache
+    - XDG_CACHE_HOME=/app/model-cache
+    - MPLCONFIGDIR=/tmp/matplotlib-cache
+    - http_proxy=${http_proxy}
+    - https_proxy=${https_proxy}
+    - no_proxy=${no_proxy}
+    - HTTP_PROXY=${http_proxy}
+    - HTTPS_PROXY=${https_proxy}
+    - NO_PROXY=${no_proxy}
+    - NVIDIA_VISIBLE_DEVICES=${NVIDIA_VISIBLE_DEVICES}
+    - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+    deploy:
+      resources:
+        reservations:
+          devices:
+          - driver: nvidia
+            device_ids:
+            - ${NVIDIA_VISIBLE_DEVICES}
+            capabilities:
+            - gpu
+    volumes:
+    - ${HOST_MACE_CACHE_DIR}:/app/model-cache
+networks:
+  default:
+    name: matgl-mcp-network
+    external: true

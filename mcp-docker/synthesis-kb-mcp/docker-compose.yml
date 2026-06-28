@@ -1,0 +1,107 @@
+services:
+  synthesis-kb-mcp:
+    build:
+      context: ../mcp-sse-router
+      dockerfile: Dockerfile
+    image: mcp-sse-router
+    container_name: synthesis-kb-mcp
+    depends_on:
+    - synthesis-kb-mcp-backend-1
+    ports:
+    - ${HOST_PORT}:${SERVER_PORT}
+    environment:
+    - SERVER_HOST=${SERVER_HOST}
+    - SERVER_PORT=${SERVER_PORT}
+    - LOG_LEVEL=${LOG_LEVEL}
+    - SERVICE_NAME=synthesis-kb-mcp
+    - BACKEND_URLS=http://synthesis-kb-mcp-backend-1:${SERVER_PORT},http://synthesis-kb-mcp-backend-2:${SERVER_PORT}
+    - BACKEND_HEALTH_PATH=/health
+    - BACKEND_SSE_PATH=/sse
+    - BACKEND_MESSAGE_PATH=/messages/
+    - PUBLIC_SSE_PATH=/sse
+    - PUBLIC_MESSAGE_PATH=/messages/
+    - PUBLIC_HEALTH_PATH=/health
+    restart: unless-stopped
+    healthcheck:
+      test: &id001
+      - CMD
+      - python
+      - -c
+      - import os, urllib.request; urllib.request.urlopen('http://localhost:' + os.environ.get('SERVER_PORT',
+        '5678') + '/health')
+      interval: 300s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+  synthesis-kb-mcp-backend-1:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        http_proxy: ${http_proxy}
+        https_proxy: ${https_proxy}
+        no_proxy: ${no_proxy}
+        HTTP_PROXY: ${http_proxy}
+        HTTPS_PROXY: ${https_proxy}
+        NO_PROXY: ${no_proxy}
+    image: synthesis-kb-mcp
+    environment:
+    - SERVER_HOST=${SERVER_HOST}
+    - SERVER_PORT=${SERVER_PORT}
+    - TOOL_CALL_TIMEOUT=${TOOL_CALL_TIMEOUT}
+    - LOG_LEVEL=${LOG_LEVEL}
+    - PYTHONUNBUFFERED=${PYTHONUNBUFFERED}
+    - SYNTHESIS_KB_PATH=${SYNTHESIS_KB_PATH}
+    - http_proxy=${http_proxy}
+    - https_proxy=${https_proxy}
+    - no_proxy=${no_proxy}
+    - HTTP_PROXY=${http_proxy}
+    - HTTPS_PROXY=${https_proxy}
+    - NO_PROXY=${no_proxy}
+    volumes:
+    - ./data:/data:ro
+    restart: unless-stopped
+    healthcheck:
+      test: *id001
+      interval: 300s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+  synthesis-kb-mcp-backend-2:
+    build:
+      args:
+        HTTPS_PROXY: ${https_proxy}
+        HTTP_PROXY: ${http_proxy}
+        NO_PROXY: ${no_proxy}
+        http_proxy: ${http_proxy}
+        https_proxy: ${https_proxy}
+        no_proxy: ${no_proxy}
+      context: .
+      dockerfile: Dockerfile
+    environment:
+    - SERVER_HOST=${SERVER_HOST}
+    - SERVER_PORT=${SERVER_PORT}
+    - TOOL_CALL_TIMEOUT=${TOOL_CALL_TIMEOUT}
+    - LOG_LEVEL=${LOG_LEVEL}
+    - PYTHONUNBUFFERED=${PYTHONUNBUFFERED}
+    - SYNTHESIS_KB_PATH=${SYNTHESIS_KB_PATH}
+    - http_proxy=${http_proxy}
+    - https_proxy=${https_proxy}
+    - no_proxy=${no_proxy}
+    - HTTP_PROXY=${http_proxy}
+    - HTTPS_PROXY=${https_proxy}
+    - NO_PROXY=${no_proxy}
+    healthcheck:
+      interval: 300s
+      retries: 3
+      start_period: 40s
+      test: *id001
+      timeout: 10s
+    image: synthesis-kb-mcp
+    restart: unless-stopped
+    volumes:
+    - ./data:/data:ro
+networks:
+  default:
+    name: matgl-mcp-network
+    external: true

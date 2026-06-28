@@ -1,0 +1,15 @@
+__pycache__
+logs
+test_codes
+
+# 不 track 训练 checkpoint / 大型权重，但 matgl-mcp 的小型 pretrained 权重需要 track
+# （单个 < 12MB，运行时直接加载，不走在线下载）
+*.pt
+!matgl-mcp/models/**/*.pt
+
+# 嵌入仓的旧 git 历史（归档时 .git -> .git_disabled 的产物，没必要纳入外层）
+.git_disabled/
+
+# 大型离线 benchmark 数据（运行时不需要，仅 dev/eval 用）
+crystallm-mcp/tools/CrystaLLM/resources/benchmarks/
+*.cif

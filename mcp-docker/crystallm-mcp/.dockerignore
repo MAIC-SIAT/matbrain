@@ -1,0 +1,115 @@
+# Git 相关
+.git
+.gitignore
+.gitattributes
+
+# Python 相关
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# 虚拟环境
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE 相关
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 操作系统相关
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# 日志文件
+*.log
+logs/
+
+# 临时文件
+*.tmp
+*.temp
+.cache/
+
+# Docker 相关
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+build.sh
+
+# 文档和说明
+README.md
+*.md
+docs/
+
+# 测试相关
+tests/
+test_*.py
+*_test.py
+.pytest_cache/
+.coverage
+htmlcov/
+
+# 配置文件（保留必要的）
+.env.example
+.env.local
+.env.development
+.env.test
+.env.production
+
+# CrystaLLM 特定排除
+tools/CrystaLLM/.git/
+tools/CrystaLLM/tests/
+tools/CrystaLLM/docs/
+tools/CrystaLLM/*.md
+tools/CrystaLLM/examples/
+tools/CrystaLLM/.pytest_cache/
+tools/CrystaLLM/build/
+tools/CrystaLLM/dist/
+tools/CrystaLLM/*.egg-info/
+
+# 大型数据文件（如果有的话）
+*.h5
+*.hdf5
+*.pkl
+*.pickle
+*.npy
+*.npz
+
+# 备份文件
+*.bak
+*.backup
+*.orig
+
+# 模型文件（运行时自动下载）
+; models/
+; *.pt
+; *.pth
+; *.ckpt

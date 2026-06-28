@@ -1,0 +1,73 @@
+services:
+  structure-verifier-mcp:
+    container_name: structure-verifier-mcp
+    build:
+      context: ../mcp-sse-router
+      dockerfile: Dockerfile
+    image: mcp-sse-router
+    depends_on:
+    - structure-verifier-mcp-backend-1
+    ports:
+    - ${HOST_PORT}:${SERVER_PORT}
+    environment:
+    - SERVER_HOST=${SERVER_HOST}
+    - SERVER_PORT=${SERVER_PORT}
+    - LOG_LEVEL=${LOG_LEVEL}
+    - SERVICE_NAME=structure-verifier-mcp
+    - BACKEND_URLS=http://structure-verifier-mcp-backend-1:${SERVER_PORT},http://structure-verifier-mcp-backend-2:${SERVER_PORT}
+    - BACKEND_SSE_PATH=/sse
+    - BACKEND_MESSAGE_PATH=/messages/
+    - PUBLIC_MESSAGE_PATH=/messages/
+    restart: unless-stopped
+    healthcheck:
+      test: &id001
+      - CMD
+      - python
+      - -c
+      - import os, urllib.request; urllib.request.urlopen('http://localhost:' + os.environ.get('SERVER_PORT',
+        '5676') + '/health')
+      interval: 300s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+  structure-verifier-mcp-backend-1:
+    build: &id002
+      context: .
+      dockerfile: Dockerfile
+      args:
+        http_proxy: ${http_proxy}
+        https_proxy: ${https_proxy}
+        no_proxy: ${no_proxy}
+        HTTP_PROXY: ${http_proxy}
+        HTTPS_PROXY: ${https_proxy}
+        NO_PROXY: ${no_proxy}
+    image: structure-verifier-mcp
+    environment: &id003
+    - SERVER_HOST=${SERVER_HOST}
+    - SERVER_PORT=${SERVER_PORT}
+    - TOOL_CALL_TIMEOUT=${TOOL_CALL_TIMEOUT}
+    - LOG_LEVEL=${LOG_LEVEL}
+    - PYTHONUNBUFFERED=${PYTHONUNBUFFERED}
+    - http_proxy=${http_proxy}
+    - https_proxy=${https_proxy}
+    - no_proxy=${no_proxy}
+    - HTTP_PROXY=${http_proxy}
+    - HTTPS_PROXY=${https_proxy}
+    - NO_PROXY=${no_proxy}
+    restart: unless-stopped
+    healthcheck: &id004
+      test: *id001
+      interval: 300s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+  structure-verifier-mcp-backend-2:
+    build: *id002
+    image: structure-verifier-mcp
+    environment: *id003
+    restart: unless-stopped
+    healthcheck: *id004
+networks:
+  default:
+    name: matgl-mcp-network
+    external: true

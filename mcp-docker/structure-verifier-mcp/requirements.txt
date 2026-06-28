@@ -1,0 +1,8 @@
+mcp>=1.6.0
+anyio>=4.9.0
+click>=8.1.8
+starlette>=0.46.2
+uvicorn>=0.34.1
+pymatgen>=2024.10.29
+numpy>=1.26.4
+smact>=3.0.0

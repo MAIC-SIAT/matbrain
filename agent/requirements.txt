@@ -1,0 +1,16 @@
+# MatBrain agent runtime — Python 3.10. Recreate the venv on a fresh host with:
+#   python3.10 -m venv .venv && . .venv/bin/activate && pip install -r requirements.txt
+#
+# The first block is required for the MatBrain agent and Web UI. pymatgen is
+# used by local validation utilities; MCP servers provide the main tool runtime.
+
+# ---- Mat-T1 + Mat-R1 dual-agent over MCP ----
+langgraph==1.2.1
+openai==2.37.0          # agent talks to the model endpoint via the OpenAI protocol
+mcp==1.27.1
+pydantic==2.13.4
+pydantic-settings==2.14.1
+gradio>=5.0
+
+# ---- local validation utilities ----
+pymatgen==2025.10.7

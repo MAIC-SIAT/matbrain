@@ -1,0 +1,212 @@
+tools:
+  - class_name: "recipe.mars-t1.mars_mcp_tools.mars_tools.SearchCrystalStructuresFromMaterialsProjectTool"
+    config:
+      sse_url: "https://your-mcp-host/mat-query/sse"
+      default_timeout: 60
+      type: native
+
+    tool_schema:
+      type: "function"
+      function:
+        name: "search_crystal_structures_from_materials_project"
+        description: "Retrieve and optimize crystal structures from Materials Project database using a chemical formula"
+        parameters:
+          type: "object"
+          properties:
+            formula:
+              type: "string"
+              description: "Chemical formula to search for (e.g., Fe2O3)"
+            conventional_unit_cell:
+              type: "boolean"
+              description: "If True, returns conventional unit cell; if False, returns primitive cell"
+            symprec:
+              type: "number"
+              description: "Symmetry precision parameter for structure refinement (default: 0.1)"
+              default: 0.1
+          required: ["formula"]
+
+
+  - class_name: "recipe.mars-t1.mars_mcp_tools.mars_tools.SearchMaterialPropertyFromMaterialsProjectTool"
+    config:
+      sse_url: "https://your-mcp-host/mat-query/sse"
+      default_timeout: 60
+      type: native
+    tool_schema:
+      type: "function"
+      function:
+        name: "search_material_property_from_materials_project"
+        description: "Query material properties from Materials Project database using chemical formula"
+        parameters:
+          type: "object"
+          properties:
+            formula:
+              type: "string"
+              description: "Chemical formula of the material(s) to search for (e.g. 'Fe2O3', 'LiFePO4')"
+          required: ["formula"]
+
+
+
+  - class_name: "recipe.mars-t1.mars_mcp_tools.mars_tools.CheckStructureAtomicGeometryPymatgenTool"
+    config:
+      sse_url: "https://your-mcp-host/pymatgen/sse"
+      default_timeout: 60
+      type: native
+    tool_schema:
+      type: "function"
+      function:
+        name: "check_structure_atomic_geometry_pymatgen"
+        description: "Check the atomic geometry reasonability of a crystal structure using PyMatGen, including atomic overlap and bond length analysis"
+        parameters:
+          type: "object"
+          properties:
+            cif_string:
+              type: "string"
+              description: "CIF format crystal structure content string"
+            min_distance_factor:
+              type: "number"
+              description: "Minimum distance factor, relative to the sum of atomic radii (default: 0.5)"
+              default: 0.5
+            bond_tolerance:
+              type: "number"
+              description: "Bond length tolerance ratio (default: 0.3, i.e., ±30%)"
+              default: 0.3
+            max_neighbors_distance:
+              type: "number"
+              description: "Maximum distance to search for neighbors (in Angstroms) (default: 5.0)"
+              default: 5.0
+          required: ["cif_string"]
+
+  - class_name: "recipe.mars-t1.mars_mcp_tools.mars_tools.SimulateXrdPatternPymatgenTool"
+    config:
+      sse_url: "https://your-mcp-host/pymatgen/sse"
+      default_timeout: 60
+      type: native
+    tool_schema:
+      type: "function"
+      function:
+        name: "simulate_xrd_pattern_pymatgen"
+        description: "Simulate the XRD diffraction pattern of a crystal structure using PyMatGen, providing complete diffraction peak information"
+        parameters:
+          type: "object"
+          properties:
+            cif_string:
+              type: "string"
+              description: "CIF format crystal structure content string"
+            wavelength:
+              type: "string"
+              description: "X-ray wavelength type, supports CuKa, MoKa, CrKa, FeKa, CoKa, AgKa, etc. (default: 'CuKa')"
+              default: "CuKa"
+            two_theta_range:
+              type: "array"
+              items:
+                type: "number"
+              description: "2θ angle scan range, format is (min_angle, max_angle) (default: (10.0, 80.0))"
+              default: [10.0, 80.0]
+            min_intensity_threshold:
+              type: "number"
+              description: "Minimum intensity threshold, as a percentage of the strongest peak (default: 0.5)"
+              default: 0.5
+          required: ["cif_string"]
+  # - class_name: "recipe.mars-t1.mars_mcp_tools.mars_tools.GenerateCrystalStructuresCrystallmTool"
+  #   config:
+  #     sse_url: "https://your-mcp-host/crystallm/sse"
+  #     default_timeout: 180
+  #     type: native
+  #   tool_schema:
+  #     type: "function"
+  #     function:
+  #       name: "generate_crystal_structures_crystallm"
+  #       description: "Generate crystal structures using CrystaLLM model based on chemical formula and optional space group"
+  #       parameters:
+  #         type: "object"
+  #         properties:
+  #           formula:
+  #             type: "string"
+  #             description: "Chemical formula (e.g., 'CsPbBr3', 'Na2Cl2'). Elements must be sorted by electronegativity."
+  #           space_group:
+  #             type: "string"
+  #             description: "Optional space group symbol (e.g., 'P4/nmm', 'Fd-3m')"
+  #           num_samples:
+  #             type: "integer"
+  #             description: "Number of crystal structures to generate (default: 2)"
+  #             default: 2
+  #         required: ["formula"]
+
+#  - class_name: "recipe.mars-t1.mars_mcp_tools.mars_tools.PredictFormationEnergyMatGLTOOL"
+#    config:
+#      sse_url: "https://your-mcp-host/matgl/sse"
+#      default_timeout: 180
+#      type: native
+#    tool_schema:
+#      type: "function"
+#      function:
+#        name: "predict_formation_energy_MatGL"
+#        description: "Predict formation energy of crystal structures using MatGL M3GNet model"
+#        parameters:
+#          type: "object"
+#          properties:
+#            cif_string:
+#              type: "string"
+#              description: "Complete CIF format crystal structure string or file content"
+#            optimize_structure:
+#              type: "boolean"
+#              description: "Whether to optimize structure before prediction (default: True)"
+#              default: True
+#            fmax:
+#              type: "number"
+#              description: "Force convergence threshold for structure optimization"
+#              default: 0.01
+#          required: ["cif_string"]
+#
+  # - class_name: "recipe.mars-t1.mars_mcp_tools.mars_tools.PredictMultiFidelityBandGapMatGLTOOL"
+  #   config:
+  #     sse_url: "https://your-mcp-host/matgl/sse"
+  #     default_timeout: 180
+  #     type: native
+    # tool_schema:
+      # type: "function"
+      # function:
+      #   name: "predict_multi_fidelity_band_gap_MatGL"
+      #   description: "Predict band gap of crystal structures using MatGL MEGNet multi-fidelity model"
+      #   parameters:
+      #     type: "object"
+      #     properties:
+      #       cif_string:
+      #         type: "string"
+      #         description: "CIF format crystal structure string or file content"
+      #       optimize_structure:
+      #         type: "boolean"
+      #         description: "Whether to optimize structure before prediction (default: True)"
+      #         default: True
+      #       fmax:
+      #         type: "number"
+      #         description: "Force convergence threshold for structure optimization"
+      #         default: 0.01
+      #     required: ["cif_string"]
+#
+#  - class_name: "recipe.mars-t1.mars_mcp_tools.mars_tools.AnalyzeThermodynamicStabilityPymatgenTOOL"
+#    config:
+#      sse_url: "https://your-mcp-host/pymatgen/sse"
+#      default_timeout: 180
+#      type: native
+#    tool_schema:
+#      type: "function"
+#      function:
+#        name: "analyze_thermodynamic_stability_pymatgen"
+#        description: "Analyze thermodynamic stability of materials"
+#        parameters:
+#          type: "object"
+#          properties:
+#            cif_string:
+#              type: "string"
+#              description: "CIF format crystal structure content string"
+#            energy_threshold:
+#              type: "number"
+#              description: "Energy threshold (eV/atom), default uses 0.025 from configuration"
+#              default: 0.025
+#              minimum: 0.0
+#            optimize_structure:
+#              type: "boolean"
+#              description: "Whether to optimize structure before energy prediction, default False"
+#              default: False
+#          required: ["cif_string"]
