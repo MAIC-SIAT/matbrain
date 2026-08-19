@@ -2,6 +2,7 @@ import re
 import json
 import os
 import regex
+import math
 import logging
 import traceback
 from verl.utils import hf_processor, hf_tokenizer
@@ -216,58 +217,61 @@ def compute_score_syntax(data_source, solution_str, ground_truth, extra_info):
         return 0.0
 
 def compute_score_turns(data_source, solution_str, ground_truth, extra_info):
-    """计算多轮工具调用的奖励分数
+    """Calculate the reward score for multi-turn tool calls.
 
-    根据有效工具调用轮数给出奖励分数：
-    - 1轮：0.2分
-    - 2轮（基本情况）：0.5分
-    - 3轮：0.7分
-    - 4轮：0.85分
-    - 5轮及以上：1.0分
+    Assigns a reward score based on the number of valid tool call turns (n) according to the formula (default k=4):
+    - 0 turns: 0.0
+    - 1 turn  (ceil(k/4)): 0.5
+    - 2 turns (ceil(k/2)): 0.7
+    - 3 turns (ceil(3k/4)): 0.85
+    - 4 turns or above (>= k): 1.0
 
     Args:
-        solution_str: 解决方案文本
+        solution_str: The solution text.
 
     Returns:
-        float: 轮数奖励分数（0.0-1.0）
+        float: The reward score for the number of turns (0.0-1.0).
     """
 
     try:
         messages = extra_info.get("messages", [])
 
-
-        # 提取所有assistant块
-        assistant_blocks = [message['content'] for message in messages if message['role']=='assistant']
-
+        # Extract all assistant blocks
+        assistant_blocks = [message['content'] for message in messages if message['role'] == 'assistant']
 
         if not assistant_blocks:
             return 0.0
 
-        # 统计包含工具调用的轮数
+        # Count the number of turns containing tool calls
         tool_call_rounds = 0
 
-        # 遍历除最后一个block外的所有assistant blocks（最后一个通常是最终答案）
+        # Iterate through all assistant blocks except the last one (the last one is usually the final answer)
         for i, assistant_block in enumerate(assistant_blocks[:-1]):
-            # 检查是否包含工具调用
+            # Check if it contains a tool call
             if '<tool_call>' in assistant_block and '</tool_call>' in assistant_block:
-                # 验证工具调用格式是否正确
+                # Verify if the tool call format is correct
                 tool_call_count = assistant_block.count('<tool_call>')
                 tool_call_end_count = assistant_block.count('</tool_call>')
 
-                # 只有当工具调用标签配对正确时才计入轮数
+                # Count the turn only when the tool call tags are correctly paired
                 if tool_call_count > 0 and tool_call_count == tool_call_end_count:
                     tool_call_rounds += 1
 
-        # 根据轮数映射到奖励分数
+        # Map the number of turns to a reward score according to the formula
+        k = extra_info.get("k", 4)  # Default k=4
+        
         if tool_call_rounds == 0:
             return 0.0
-        elif tool_call_rounds == 1:
-            return 0.5
-        elif tool_call_rounds == 2:
+        elif tool_call_rounds >= k:
+            return 1.0
+        elif tool_call_rounds == math.ceil(3 * k / 4):
+            return 0.85
+        elif tool_call_rounds == math.ceil(k / 2):
             return 0.7
-        elif tool_call_rounds >= 3:
-            return 1
-
+        elif tool_call_rounds == math.ceil(k / 4):
+            return 0.5
+        else:
+            return 0.0
 
     except Exception as e:
         print(f"[DEBUG] Error in compute_score_turns: {e}")
